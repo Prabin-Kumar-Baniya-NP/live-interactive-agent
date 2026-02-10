@@ -1,0 +1,32 @@
+name: Monorepo CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  structure-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Verify monorepo structure
+        run: |
+          echo "Checking monorepo structure..."
+          if [ -d "frontend" ] && [ -d "backend" ] && [ -d "agent-runtime" ]; then
+            echo "✓ All core directories exist"
+            exit 0
+          else
+            echo "✗ Missing required directories"
+            echo "Expected: frontend, backend, agent-runtime"
+            ls -F
+            exit 1
+          fi
+
+      # Future Jobs Layout:
+      # - lint-frontend (Epic 22)
+      # - lint-backend (Epic 4)
+      # - test-backend (Epic 4)
+      # - test-agent (Epic 36)
