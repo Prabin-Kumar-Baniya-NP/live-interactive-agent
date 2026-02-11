@@ -22,6 +22,12 @@ class Settings(BaseSettings):
 
     # Security
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    COOKIE_DOMAIN: str = "localhost"
+    COOKIE_SECURE: bool = False
 
     @validator("CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:

@@ -5,9 +5,9 @@ import sys
 # Add backend directory to sys.path so we can import app
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import bcrypt  # noqa: E402
 from sqlalchemy import select  # noqa: E402
 
+from app.core.security import hash_password  # noqa: E402
 from app.db.session import AsyncSessionLocal  # noqa: E402
 from app.models import Organization, User  # noqa: E402
 
@@ -30,30 +30,51 @@ async def seed_data():
             else:
                 print("Test Organization already exists.")
 
-            # Check if user exists
+            # --- Check if Admin exists ---
             result = await session.execute(
                 select(User).where(User.email == "admin@test.com")
             )
-            user = result.scalar_one_or_none()
+            admin = result.scalar_one_or_none()
 
-            if not user:
-                print("Creating Test User...")
-                # Hash password "password123"
-                hashed = bcrypt.hashpw(b"password123", bcrypt.gensalt()).decode("utf-8")
+            if not admin:
+                print("Creating Admin User...")
+                hashed = hash_password("password123")
 
-                user = User(
+                admin = User(
                     email="admin@test.com",
                     hashed_password=hashed,
                     full_name="Admin User",
                     role="admin",
                     organization_id=org.id,
                 )
-                session.add(user)
-                await session.commit()
+                session.add(admin)
                 print("Created user: admin@test.com / password123")
             else:
-                print("Test User already exists.")
+                print("Admin User already exists.")
 
+            # --- Check if Member exists ---
+            result = await session.execute(
+                select(User).where(User.email == "member@test.com")
+            )
+            member = result.scalar_one_or_none()
+
+            if not member:
+                print("Creating Member User...")
+                hashed = hash_password("password123")
+
+                member = User(
+                    email="member@test.com",
+                    hashed_password=hashed,
+                    full_name="Member User",
+                    role="member",
+                    organization_id=org.id,
+                )
+                session.add(member)
+                print("Created user: member@test.com / password123")
+            else:
+                print("Member User already exists.")
+
+            await session.commit()
             print("Seeding completed successfully.")
 
         except Exception as e:
