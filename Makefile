@@ -19,3 +19,6 @@ health:
 
 seed:
 	cd backend && python3 -m poetry run python scripts/seed.py
+
+api:
+	cd backend && poetry run uvicorn app.main:app --reload --port 8000

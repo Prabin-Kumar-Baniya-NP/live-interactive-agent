@@ -27,8 +27,11 @@ Monorepo for a real-time interactive AI agent platform.
       ```
     - **Backend:**
       ```bash
-      cd backend && poetry run uvicorn main:app --reload
+      make api
+      # Or manually: cd backend && poetry run uvicorn app.main:app --reload --port 8000
       ```
+      - API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+      - Health Check: `curl http://localhost:8000/api/v1/health`
     - **Agent Runtime:**
       ```bash
       cd agent-runtime && poetry run python agent.py
