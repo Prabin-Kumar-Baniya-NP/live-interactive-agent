@@ -85,3 +85,52 @@ The repository includes a GitHub Actions workflow `.github/workflows/ci.yml` tha
 - Frontend Linting & Testing (Epic 22)
 - Backend Linting & Testing (Epic 4)
 - Agent Runtime Verification (Epic 36)
+
+## Database & Caching
+
+The project uses PostgreSQL for persistent storage and Redis for caching/session state.
+
+### Credentials (Local)
+
+- **PostgreSQL**: `localhost:5432`
+  - User: `liveinteractiveagent`
+  - Pass: `vibecoding123`
+  - DB: `liveinteractiveagentdb`
+- **Redis**: `localhost:6379`
+
+### Common Commands
+
+**Migrations (Alembic)**
+
+- Run migrations: `cd backend && poetry run alembic upgrade head`
+- Create migration: `cd backend && poetry run alembic revision --autogenerate -m "description"`
+- Rollback: `cd backend && poetry run alembic downgrade -1`
+
+**Seeding**
+
+- Seed initial data: `make seed` (Creates Test Organization and Admin User)
+
+**Direct Access**
+
+- PostgreSQL: `psql -h localhost -p 5432 -U liveinteractiveagent -d liveinteractiveagentdb`
+- Redis: `redis-cli`
+
+### Backup & Restore
+
+**Backup**
+
+```bash
+pg_dump -h localhost -p 5432 -U liveinteractiveagent liveinteractiveagentdb > backup.sql
+```
+
+**Restore**
+
+```bash
+psql -h localhost -p 5432 -U liveinteractiveagent liveinteractiveagentdb < backup.sql
+```
+
+### Initial Schema
+
+- `users`: Platform users (admins, members).
+- `organizations`: Multi-tenancy grouping.
+- `sessions`: LiveKit session tracking.

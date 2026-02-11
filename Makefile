@@ -1,4 +1,4 @@
-.PHONY: lint format health
+.PHONY: lint format health seed
 
 lint:
 	cd backend && python3 -m poetry run ruff check .
@@ -16,3 +16,6 @@ format:
 
 health:
 	bash ./scripts/health-check.sh
+
+seed:
+	cd backend && python3 -m poetry run python scripts/seed.py
