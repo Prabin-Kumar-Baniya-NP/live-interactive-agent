@@ -1,0 +1,24 @@
+port: 7880
+bind_addresses:
+  - ""
+
+rtc:
+  udp_port: 7882
+  tcp_port: 7881
+  use_external_ip: true
+  node_ip: "127.0.0.1"
+
+keys:
+  devkey: devsecret
+
+logging:
+  json: false
+  level: info
+
+# Webhook configuration
+# Note: host.docker.internal is used because LiveKit runs in Docker but the backend runs on the host during development.
+# On Linux, this requires extra_hosts setting in docker-compose.yml.
+webhook:
+  api_key: devkey
+  urls:
+    - http://host.docker.internal:8000/api/webhooks/livekit

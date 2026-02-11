@@ -1,4 +1,4 @@
-.PHONY: lint format
+.PHONY: lint format health
 
 lint:
 	cd backend && python3 -m poetry run ruff check .
@@ -13,3 +13,6 @@ format:
 	cd agent-runtime && python3 -m poetry run ruff check . --fix
 	cd agent-runtime && python3 -m poetry run black .
 	pnpm --filter frontend format
+
+health:
+	bash ./scripts/health-check.sh

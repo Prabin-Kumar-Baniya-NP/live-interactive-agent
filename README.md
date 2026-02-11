@@ -66,6 +66,18 @@ The `docker-compose.yml` provides:
 
 **Note:** Ensure ports 5432, 6379, and 7880 are free before starting.
 
+For detailed setup and compatibility information, see [LiveKit Server Setup](docs/livekit-setup.md).
+
+## 🎥 LiveKit CLI (Optional but Recommended)
+
+For debugging and generating tokens, install the `lk` CLI:
+
+- **macOS:** `brew install livekit-cli`
+- **Linux:** `curl -sSL https://get.livekit.io/cli | bash`
+- **Windows:** `choco install livekit-cli`
+
+For more details, see [LiveKit CLI Docs](https://docs.livekit.io/server/cli/).
+
 ## 🔄 CI/CD
 
 The repository includes a GitHub Actions workflow `.github/workflows/ci.yml` that validates the project structure on every push. In future epics, this pipeline will be extended to include:
