@@ -15,3 +15,11 @@ class PanelType(str, Enum):
     CODING_IDE = "coding_ide"
     WHITEBOARD = "whiteboard"
     DOCUMENT_VIEWER = "document_viewer"
+
+
+@unique
+class ModalityProfile(str, Enum):
+    AUDIO_ONLY = "audio_only"
+    AUDIO_CAMERA = "audio_camera"
+    AUDIO_SCREENSHARE = "audio_screenshare"
+    AUDIO_CAMERA_SCREENSHARE = "audio_camera_screenshare"

@@ -25,3 +25,6 @@ class Organization(Base):
     agents = relationship(
         "Agent", back_populates="organization", cascade="all, delete-orphan"
     )
+    session_templates = relationship(
+        "SessionTemplate", back_populates="organization", cascade="all, delete-orphan"
+    )

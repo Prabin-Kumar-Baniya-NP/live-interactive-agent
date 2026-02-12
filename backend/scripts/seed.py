@@ -9,8 +9,12 @@ from sqlalchemy import select  # noqa: E402
 
 from app.core.security import hash_password  # noqa: E402
 from app.db.session import AsyncSessionLocal  # noqa: E402
-from app.models import Agent, Organization, User  # noqa: E402
-from app.models.enums import AgentModality  # noqa: E402
+from app.models import Agent, Organization, SessionTemplate, User  # noqa: E402
+from app.models.enums import (  # noqa: E402
+    AgentModality,
+    ModalityProfile,
+    PanelType,
+)
 
 
 async def seed_data():
@@ -128,6 +132,59 @@ async def seed_data():
                 print("Created Coding Expert Agent")
             else:
                 print("Coding Expert Agent already exists.")
+
+            # --- Refresh agents to get IDs ---
+            await session.flush()
+            # If we just created them or they existed,
+            # we need to ensure we have their IDs.
+            # If they existed, verify we have the object bound to
+            # session or fetch again if cleaner.
+
+            # Re-fetch both to be safe and ensure they are attached
+            # to current session transaction
+            triage = (
+                await session.execute(
+                    select(Agent).where(
+                        Agent.name == "Triage Agent", Agent.organization_id == org.id
+                    )
+                )
+            ).scalar_one()
+            coder = (
+                await session.execute(
+                    select(Agent).where(
+                        Agent.name == "Coding Expert", Agent.organization_id == org.id
+                    )
+                )
+            ).scalar_one()
+
+            # --- Check if Session Template exists ---
+            result = await session.execute(
+                select(SessionTemplate).where(
+                    SessionTemplate.organization_id == org.id,
+                    SessionTemplate.name == "Default Coding Interview",
+                )
+            )
+            template = result.scalar_one_or_none()
+
+            if not template:
+                print("Creating Default Session Template...")
+                template = SessionTemplate(
+                    organization_id=org.id,
+                    name="Default Coding Interview",
+                    description="""
+                    Standard coding interview setup with triage and expert agents.
+                    """,
+                    agent_ids=[triage.id, coder.id],
+                    initial_agent_id=triage.id,
+                    modality_profile=ModalityProfile.AUDIO_SCREENSHARE,
+                    enabled_panels=[PanelType.CODING_IDE.value],
+                    max_duration_seconds=3600,
+                    idle_timeout_seconds=300,
+                )
+                session.add(template)
+                print("Created Default Session Template")
+            else:
+                print("Default Session Template already exists.")
 
             await session.commit()
             print("Seeding completed successfully.")
