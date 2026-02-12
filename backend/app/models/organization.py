@@ -22,3 +22,6 @@ class Organization(Base):
 
     users = relationship("User", back_populates="organization")
     sessions = relationship("Session", back_populates="organization")
+    agents = relationship(
+        "Agent", back_populates="organization", cascade="all, delete-orphan"
+    )

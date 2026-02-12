@@ -9,7 +9,8 @@ from sqlalchemy import select  # noqa: E402
 
 from app.core.security import hash_password  # noqa: E402
 from app.db.session import AsyncSessionLocal  # noqa: E402
-from app.models import Organization, User  # noqa: E402
+from app.models import Agent, Organization, User  # noqa: E402
+from app.models.enums import AgentModality  # noqa: E402
 
 
 async def seed_data():
@@ -73,6 +74,60 @@ async def seed_data():
                 print("Created user: member@test.com / password123")
             else:
                 print("Member User already exists.")
+
+            # --- Check if Triage Agent exists ---
+            result = await session.execute(
+                select(Agent).where(
+                    Agent.organization_id == org.id, Agent.name == "Triage Agent"
+                )
+            )
+            triage = result.scalar_one_or_none()
+
+            if not triage:
+                print("Creating Triage Agent...")
+                triage = Agent(
+                    organization_id=org.id,
+                    name="Triage Agent",
+                    instructions="""
+                    You are a helpful triage agent.
+                    Your job is to route the user to the right specialist.
+                    """,
+                    model="gpt-4.1-mini",
+                    modality=AgentModality.AUDIO_ONLY,
+                    tools=[],
+                    panels=[],
+                )
+                session.add(triage)
+                print("Created Triage Agent")
+            else:
+                print("Triage Agent already exists.")
+
+            # --- Check if Coding Expert exists ---
+            result = await session.execute(
+                select(Agent).where(
+                    Agent.organization_id == org.id, Agent.name == "Coding Expert"
+                )
+            )
+            coder = result.scalar_one_or_none()
+
+            if not coder:
+                print("Creating Coding Expert Agent...")
+                coder = Agent(
+                    organization_id=org.id,
+                    name="Coding Expert",
+                    instructions="""
+                    You are an expert software engineer.
+                    Help the user with coding tasks.
+                    """,
+                    model="gpt-4.1",
+                    modality=AgentModality.AUDIO_SCREENSHARE,
+                    tools=[],
+                    panels=["coding_ide"],
+                )
+                session.add(coder)
+                print("Created Coding Expert Agent")
+            else:
+                print("Coding Expert Agent already exists.")
 
             await session.commit()
             print("Seeding completed successfully.")
