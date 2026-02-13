@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import agents, auth, health, organizations, session_templates
+from app.api.v1 import agents, auth, health, organizations, session_templates, sessions
 
 api_router = APIRouter()
 
@@ -13,3 +13,4 @@ api_router.include_router(agents.router, prefix="/agents", tags=["agents"])
 api_router.include_router(
     session_templates.router, prefix="/session-templates", tags=["session-templates"]
 )
+api_router.include_router(sessions.router, prefix="/sessions", tags=["sessions"])

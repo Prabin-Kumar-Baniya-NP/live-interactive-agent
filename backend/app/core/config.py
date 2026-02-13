@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     LIVEKIT_URL: str
     LIVEKIT_API_KEY: str
     LIVEKIT_API_SECRET: str
+    LIVEKIT_TOKEN_TTL_SECONDS: int = 3600
 
     # Security
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]

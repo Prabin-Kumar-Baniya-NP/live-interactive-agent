@@ -59,6 +59,11 @@ We use `pnpm` workspaces for the frontend and `poetry` for Python packages.
 - **Linting:** `make lint`
 - **Formatting:** `make format`
 
+## 📚 Documentation
+
+- [Epic Task Breakdown](docs/04_Epic_Task_Breakdown.md)
+- [Low-Level Design](docs/03_Low_Level_Design.md)
+
 ## 🐳 Docker Services
 
 The `docker-compose.yml` provides:

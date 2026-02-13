@@ -82,3 +82,35 @@ curl -X GET http://localhost:8000/api/v1/auth/user \
 ## 🧪 Testing
 
 Run endpoints locally and verify using the Swagger UI.
+
+## 🗣️ Session Initiation
+
+### Overview
+
+The session initiation flow allows end-users to start an interactive session.
+
+1.  **Frontend requests session start**.
+2.  **API validates template & generates token**.
+3.  **Frontend receives token & connects to LiveKit**.
+
+### Endpoints
+
+- `POST /api/v1/sessions/start` - Start a new session.
+  - Requires: `session_template_id`
+  - Returns: `access_token`, `livekit_url`, `session_id`
+- `GET /api/v1/sessions/{id}` - Get session status.
+- `GET /api/v1/sessions` - List sessions.
+
+### Example (cURL)
+
+```bash
+# Start Session
+curl -X POST http://localhost:8000/api/v1/sessions/start \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"session_template_id": "uuid-of-template"}'
+```
+
+### Example Script (Python)
+
+See `scripts/example_start_session.py` for a full Python example using `requests`.
