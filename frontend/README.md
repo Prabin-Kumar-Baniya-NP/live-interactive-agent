@@ -30,14 +30,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `app/` - App Router pages and layouts
   - `(auth)` - Authentication pages (Login, Signup)
   - `(dashboard)` - Main application dashboard
-  - `(session)` - Live session interface
+  - `(session)` - Live session interface (LiveKitProvider wrapper)
 - `components/`
   - `ui/` - Reusable UI primitives (Button, Input, Card)
   - `layout/` - Layout components (AppShell, Sidebar, Header)
-- `hooks/` - Custom React hooks (useTheme, etc.)
-- `services/` - API clients and configuration
+- `hooks/` - Custom React hooks (useLiveKit, useConnectionStatus, etc.)
+- `services/` - API clients, LiveKit service
 - `styles/` - Global CSS and design tokens
-- `types/` - TypeScript definitions
+- `types/` - TypeScript definitions (livekit)
+- `utils/` - Utility functions (livekit-errors)
 
 ## Design System
 
@@ -56,3 +57,23 @@ Copy `.env.example` to `.env.local` for development.
 | ------------------------- | ----------------------------------------------------------------------- |
 | `NEXT_PUBLIC_LIVEKIT_URL` | WebSocket URL for LiveKit Server (default: `ws://localhost:7880`)       |
 | `NEXT_PUBLIC_API_URL`     | Base URL for the Platform API (default: `http://localhost:8000/api/v1`) |
+
+## LiveKit Integration
+
+The frontend integrates the `livekit-client` SDK (v2.17+) for real-time WebRTC communication. This integration is modularized into services, context providers, and custom hooks.
+
+### Architecture
+
+- **Service (`services/livekit.ts`)**: Encapsulates raw SDK logic (`createRoom`, `connectToRoom`, `disconnectFromRoom`).
+- **Context (`LiveKitProvider`)**: Manages the `Room` instance state, connection status, participants, and errors. Wrapped around the session layout (`app/(session)/layout.tsx`).
+- **Hooks**:
+  - `useLiveKit()`: Full access to the LiveKit context.
+  - `useConnectionStatus()`: Simplified connection flags (`isConnected`, `isReconnecting`, etc.).
+  - `useParticipants()`: Participant lists with `localParticipant` and `remoteParticipants` helpers.
+  - `useConnectionQuality()`: Connection quality monitoring for the local user.
+
+### Features
+
+- **Reconnection**: Handled automatically by the SDK with UI state synchronization.
+- **Error Handling**: Connection failures and token errors are classified into user-friendly messages (`utils/livekit-errors.ts`).
+- **State Management**: React state reflects real-time room events (`Connected`, `Disconnected`, `ParticipantConnected`, etc.).
