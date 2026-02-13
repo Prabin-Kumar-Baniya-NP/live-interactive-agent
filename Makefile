@@ -22,3 +22,16 @@ seed:
 
 api:
 	cd backend && poetry run uvicorn app.main:app --reload --port 8000
+
+agent-dev:
+	cd agent-runtime && poetry run python main.py dev
+
+agent-install:
+	cd agent-runtime && poetry install
+
+agent-lint:
+	cd agent-runtime && poetry run ruff check .
+
+agent-format:
+	cd agent-runtime && poetry run black .
+	cd agent-runtime && poetry run ruff check . --fix
