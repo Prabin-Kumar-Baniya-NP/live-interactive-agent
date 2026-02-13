@@ -35,3 +35,15 @@ agent-lint:
 agent-format:
 	cd agent-runtime && poetry run black .
 	cd agent-runtime && poetry run ruff check . --fix
+
+frontend-dev:
+	pnpm --filter frontend dev
+
+frontend-build:
+	pnpm --filter frontend build
+
+frontend-lint:
+	pnpm --filter frontend lint
+
+frontend-format:
+	pnpm --filter frontend format
