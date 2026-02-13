@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Optional
 
 from livekit.agents import AgentSession, room_io
 from livekit.plugins import noise_cancellation
@@ -15,7 +16,9 @@ from core.plugins import (
 logger = logging.getLogger("agent-runtime")
 
 
-def create_agent_session(settings: RuntimeSettings) -> AgentSession:
+def create_agent_session(
+    settings: RuntimeSettings, userdata: Optional[Any] = None
+) -> AgentSession:
     """
     Creates a configured AgentSession with all voice pipeline plugins.
     """
@@ -34,15 +37,18 @@ def create_agent_session(settings: RuntimeSettings) -> AgentSession:
     logger.info("VAD: Silero VAD loaded")
     logger.info("Turn Detector: LiveKit Multilingual Model initialized")
 
-    session = AgentSession(
+    kwargs = dict(
         stt=stt,
         llm=llm,
         tts=tts,
         vad=vad,
         turn_detection=turn_detector,
-        # Interruption handling is enabled by default (allow_interruptions=True)
-        # The VAD detects user speech and the Agent automatically stops TTS.
     )
+
+    if userdata is not None:
+        kwargs["userdata"] = userdata
+
+    session = AgentSession(**kwargs)
 
     return session
 

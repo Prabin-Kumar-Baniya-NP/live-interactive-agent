@@ -1,8 +1,11 @@
+import json
+
 from livekit import agents, rtc
-from livekit.agents import Agent
 from livekit.plugins import silero
 
+from agents.base_agent import BaseAgent
 from config.settings import settings
+from core.context import SessionContext
 from core.logging import get_logger, setup_logging
 from core.session import create_agent_session, create_room_options
 
@@ -64,22 +67,43 @@ async def entrypoint(ctx: agents.JobContext):
 
     logger.info(f"Connected to room: {ctx.room.name}")
 
-    # Task 13.8: Create and start AgentSession
-    session = create_agent_session(settings)
+    # Task 14.4: Parse metadata and create SessionContext
+    metadata = {}
+    if ctx.room.remote_participants:
+        # Try to get metadata from the first participant
+        first_p = list(ctx.room.remote_participants.values())[0]
+        if first_p.metadata:
+            try:
+                metadata = json.loads(first_p.metadata)
+            except Exception:
+                logger.warning(
+                    f"Failed to parse metadata for participant {first_p.identity}"
+                )
 
-    # Create minimal placeholder Agent
-    agent = Agent(instructions="You are a helpful voice assistant.")
-
-    # Start the session
-    await session.start(
-        room=ctx.room,
-        agent=agent,
-        room_options=create_room_options(),
+    session_ctx = SessionContext(
+        user_id=metadata.get("user_id"),
+        session_template_id=metadata.get("session_template_id"),
     )
 
-    # Generate initial greeting
-    await session.generate_reply(
-        instructions="Greet the user and offer your assistance."
+    # Task 13.8: Create and start AgentSession (userdata passed to constructor)
+    session = create_agent_session(settings, userdata=session_ctx)
+
+    # Task 14.6: Register error handlers
+    from core.error_handler import register_error_handlers
+
+    register_error_handlers(session)
+
+    # Create BaseAgent
+    agent = BaseAgent(
+        instructions=settings.DEFAULT_AGENT_INSTRUCTIONS,
+        greeting=settings.DEFAULT_AGENT_GREETING,
+    )
+
+    # Start the session (greeting is handled by BaseAgent.on_enter)
+    await session.start(
+        agent=agent,
+        room=ctx.room,
+        room_options=create_room_options(),
     )
 
 

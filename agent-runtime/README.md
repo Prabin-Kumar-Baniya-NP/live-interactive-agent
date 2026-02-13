@@ -105,18 +105,56 @@ The agent runtime supports robust interruption handling powered natively by the 
 - **Turn Logic:** The `TurnDetector` then waits for the user to finish their new utterance. Once the user stops speaking (end-of-turn), the full transcript is sent to the LLM to generate a new response, acknowledging the interruption.
 - **Configuration:** No custom code is required for this behavior; it is enabled by default in the `AgentSession` configuration (`allow_interruptions=True` by default).
 
-## Verification
+## Single Agent Architecture
 
-To verify the agent is running:
+The runtime implements a robust single-agent architecture designed for extensibility:
 
-1. Check the logs. You should see "Connected to LiveKit" or similar success messages.
-2. Check the health endpoint:
+### BaseAgent
 
-```bash
-curl http://localhost:8081/health
-```
+The `BaseAgent` class (`agents/base_agent.py`) extends the LiveKit SDK `Agent` to provide:
 
-3. Connect a client to a LiveKit room. The agent should join automatically if configured.
+- **Lifecycle Hooks**: `on_enter` (greeting) and `on_user_turn_completed` (logging/bookkeeping).
+- **Standardized Greeting**: Configurable greeting message sent when the agent joins.
+- **Context Access**: Easy access to the `SessionContext`.
+
+### SessionContext
+
+The `SessionContext` (`core/context.py`) acts as the shared state repository for the session, passed as `userdata`. It stores:
+
+- **User Profile**: `user_id`, `user_name`, `session_template_id`.
+- **Observations**: List of insights gathered by the agent.
+- **Session Flags**: Custom key-value pairs for session-specific logic.
+- **Modality State**: Tracks active capabilities (camera, screenshare).
+
+### Error Handling
+
+The runtime includes a centralized error handler (`core/error_handler.py`) that:
+
+- Listens for pipeline errors (STT, LLM, TTS failures).
+- Classifies errors as **Transient** (network/timeouts - log warning) or **Permanent** (auth/config - log error).
+- Logs interruptions (`agent_speech_interrupted`) for analytics.
+
+## Configuration
+
+New environment variables control the default agent behavior:
+
+- `DEFAULT_AGENT_INSTRUCTIONS`: System prompt for the agent.
+- `DEFAULT_AGENT_GREETING`: Initial greeting message.
+
+## End-to-End Verification
+
+To verify the single-agent implementation:
+
+1.  **Start Services**: Ensure LiveKit Server, Redis, and Postgres are running (`docker compose up -d`).
+2.  **Run Agent**: `poetry run python main.py dev`.
+3.  **Connect Client**: Use the LiveKit CLI or a client SDK to join a room.
+    ```bash
+    livekit-cli join-room --url ws://localhost:7880 --api-key devkey --api-secret devsecret --identity user1 --room test-room
+    ```
+4.  **Verify Greeting**: The agent should join and speak the configured greeting ("Greet the user warmly...").
+5.  **Speak**: Speak into the microphone. Verify the agent transcribes and responds.
+6.  **Interrupt**: Speak while the agent is responding. The agent should stop immediately.
+7.  **Check Logs**: Verify `[agents.base_agent] User turn completed` logs appear.
 
 ## Troubleshooting
 

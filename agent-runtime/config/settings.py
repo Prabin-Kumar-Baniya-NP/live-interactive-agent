@@ -25,6 +25,12 @@ class RuntimeSettings(BaseSettings):
     TTS_MODEL: str = "sonic"
     TTS_VOICE_ID: str
 
+    # Agent Defaults
+    DEFAULT_AGENT_INSTRUCTIONS: str = (
+        "You are a helpful voice assistant. Be concise and friendly."
+    )
+    DEFAULT_AGENT_GREETING: str = "Greet the user warmly and offer your assistance."
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
