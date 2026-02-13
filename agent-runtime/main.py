@@ -1,16 +1,27 @@
-import asyncio
-
 from livekit import agents, rtc
+from livekit.agents import Agent
+from livekit.plugins import silero
 
 from config.settings import settings
 from core.logging import get_logger, setup_logging
+from core.session import create_agent_session, create_room_options
 
 logger = get_logger("agent_runtime")
 
 
 async def prewarm(proc: agents.JobProcess):
+    """
+    Preloads heavy models and modules to reduce cold-start latency.
+    """
     logger.info("Agent process prewarming...")
-    # Pre-import heavy modules here for faster job startup
+
+    proc.userdata["vad"] = silero.VAD.load(force_download=False)
+    logger.info("Silero VAD loaded")
+
+    # Pre-import other plugins implicitly done at top level,
+    # but we can force initialize things if needed.
+    # For now, VAD loading is the heaviest local op.
+    logger.info("Prewarm complete")
 
 
 async def entrypoint(ctx: agents.JobContext):
@@ -51,20 +62,25 @@ async def entrypoint(ctx: agents.JobContext):
             f"{participant.identity} in room {ctx.room.name}"
         )
 
-    # Task 12.7: Graceful Shutdown
-    shutdown_event = asyncio.Event()
-
-    @ctx.room.on("disconnected")
-    def on_disconnected(event=None):
-        logger.info(f"Room disconnected: {ctx.room.name}, cleaning up...")
-        shutdown_event.set()
-
     logger.info(f"Connected to room: {ctx.room.name}")
 
-    # TODO: Epic 13 - Initialize AgentSession and start pipeline
+    # Task 13.8: Create and start AgentSession
+    session = create_agent_session(settings)
 
-    # Wait for the room to disconnect
-    await shutdown_event.wait()
+    # Create minimal placeholder Agent
+    agent = Agent(instructions="You are a helpful voice assistant.")
+
+    # Start the session
+    await session.start(
+        room=ctx.room,
+        agent=agent,
+        room_options=create_room_options(),
+    )
+
+    # Generate initial greeting
+    await session.generate_reply(
+        instructions="Greet the user and offer your assistance."
+    )
 
 
 if __name__ == "__main__":
